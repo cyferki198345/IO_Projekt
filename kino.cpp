@@ -1104,7 +1104,7 @@ class Sklep {
 	vector<dodatek> dodList;
 	vector<znizka> znizList;
 	vector<bilet> bilList;
-	archive();
+	void archive();
 public:
 	Sklep(SystemPlatnosci*, Repertuar*);
 	~Sklep();
@@ -1307,7 +1307,7 @@ Sklep::~Sklep() {
 	plik.close();
 }
 
-Sklep::archive() {
+void Sklep::archive() {
 	ofstream plik(BILARCHPLIK, ios::out | ios::app);
 	if(plik.good()) {
 		dataPL2 akt = aktualnaData2();
