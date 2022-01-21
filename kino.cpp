@@ -137,7 +137,6 @@ SystemPlatnosci::SystemPlatnosci() {
 		start = 1000000;
 	}
 }
-//TO-DO WAZNE - wczytywac start z pliku w konstruktorze i zapisywac do pliku w destruktorze
 
 SystemPlatnosci::~SystemPlatnosci() {
 	ofstream plik(SYSPLATPLIK);
@@ -192,7 +191,6 @@ Uzytkownik::Uzytkownik(string l, string h, string i, string n, dataPL dataUr) {
 	haslo = h;
 	daneOsobowe = {i,n,dataUr};
 	next = NULL;
-	// TO-DO === dodatkowe zabezpieczenie przed nieprawidlowymi datami === TO-DO
 }
 
 class UserDB {
@@ -458,7 +456,6 @@ int Film::dodajSeans(int g, int mi, dataPL dataS) {
 	I0 = g*60+mi;
 	if(daneF.czasTrwania + I0 + PRZERWA >= 1440) return 5;
 	//zakladamy, ze zaden film nie moze trwac do polnocy
-	// TO-DO - sprobowac ominac to ograniczenie by film mogl trwac do nastepnego dnia
 	if(terminy != NULL) {
 		Seans* aux1 = terminy;
 		Seans* aux2 = terminy;
@@ -612,7 +609,6 @@ bool Film::dodajBilet(long user, daneSeansu dS, int miejsce) {
 	}
 	return false;
 }
-//TO-DO - zmienic wartrosc zwracana tej funkcji i z wyzszych klas na int, wyszczegolnic kody bledow
 
 bool Film::usunBilet(long user, daneSeansu dS, int miejsce) {
 	Seans* aux = terminy;
@@ -632,7 +628,6 @@ bool Film::usunBilet(long user, daneSeansu dS, int miejsce) {
 	}
 	return false;
 }
-//TO-DO - zmienic wartrosc zwracana tej funkcji i z wyzszych klas na int, wyszczegolnic kody bledow
 
 void Film::printSeanseToFile() {
 	ofstream plik(REPERPLIK, ios::out | ios::app);
@@ -669,9 +664,6 @@ void Film::setSeansFromFile(daneSeansu dS, int m, vector<long> vL) {
 
 //	^^^ FILM
 //	vvv REPERTUAR
-
-//TO-DO - na poczatku kazdej metody zrobic update() porownujacy aktualna date z datami seansow
-//skasowac te ktore sie odbyly i przeniesc bilety na nie do archiwum
 
 class Repertuar {
 	UserDB* udbR;
@@ -860,7 +852,7 @@ int Repertuar::dodajSeansDoFilmu(string naz, int g, int mi, dataPL dataS) {
 
 int Repertuar::modFilm(string naz, string s3, int i1, int i2, int i3) {
 	this->update();
-	if(i1 < 0 || i2 < 0 || i2 > MAXDLUGFILM || i3 < 0) return 1; //TO-DO - rozdzielic bledy jak wyzej
+	if(i1 < 0 || i2 < 0 || i2 > MAXDLUGFILM || i3 < 0) return 1;
 	Film* filmAux = filmList;
 	while(filmAux->daneF.tytul != naz && filmAux != NULL) filmAux = filmAux->next;
 	if(filmAux == NULL) return -1;	//kod bledu -1 - nie znaleziono filmu
@@ -1036,9 +1028,6 @@ bool Repertuar::usunBiletZFilmu(long user, string naz, daneSeansu dS, int miejsc
 // === OBSLUGA SKLEPU ===
 // ======================
 
-//TO-DO - na poczatku kazdej metody zrobic update() porownujacy aktualna date z datami seansow
-//skasowac te ktore sie odbyly i przeniesc bilety na nie do archiwum
-
 struct dodatek {
 	string opis;
 	double skladnik1;
@@ -1072,18 +1061,18 @@ ostream& operator<<(ostream& stm, const dodatek& d) {
 	if(d.skladnik2>0) stm << "+" << d.skladnik2 << "PLN po uwzglednieniu promocji procentowej.";
 	stm << endl;
 	return stm;
-}	//TO-DO: dodatkowe warunki do (nie)wyswietlania kropek i przecinkow w zaleznosci ktore warunki sa spelnione
+}
 
 ostream& operator<<(ostream& stm, const znizka& z) {
 	stm << "Znizka: " << z.opis << endl;
-	stm << "Dozwolony wiek kupujacego: " << z.minWiek << "-" << z.maxWiek << endl; //TO-DO: bardziej sensowne wyswietlanie, np. "brak ograniczen" dla 0->100
+	stm << "Dozwolony wiek kupujacego: " << z.minWiek << "-" << z.maxWiek << endl;
 	stm << "Promocja: ";
 	if(z.odjemnik1>0) stm << "-" << z.odjemnik1 << "PLN przed uwzglednieniem promocji procentowej, ";
 	if(z.procent>0) stm << "-" << z.procent << "% promocji procentowej, ";
 	if(z.odjemnik2>0) stm << "-" << z.odjemnik2 << "PLN po uwzglednieniu promocji procentowej.";
 	stm << endl;
 	return stm;
-}	//TO-DO: dodatkowe warunki do (nie)wyswietlania kropek i przecinkow w zaleznosci ktore warunki sa spelnione
+}
 
 ostream& operator<<(ostream& stm, const bilet& bil) {
 	stm << "Uzytkownik: " << bil.user << endl;
@@ -1357,11 +1346,11 @@ int Sklep::kupBilet(long user, string nazwaFilmu, daneSeansu daneSR, int miejsce
 	this->archive();
 	double cena = this->getCena(nazwaFilmu, miejsceR, dodListR, znizListR);
 	if(cena < 0 || user < 0) return 1; //zle wprowadzone dane
-	bool status = reper->dodajBiletDoFilmu(user, nazwaFilmu, daneSR, miejsceR); //TO-DO: zmienic na int, wyszczegolowic bledy (bedzie ich bardzo duzo)
+	bool status = reper->dodajBiletDoFilmu(user, nazwaFilmu, daneSR, miejsceR);
 	if(status) {
 		unsigned long transID = sysPlat->autoryzacja(cena);
 		if(transID == 0) {
-			status = reper->usunBiletZFilmu(user, nazwaFilmu, daneSR, miejsceR); //TO-DO: zmienic na int, wyszczegolowic bledy (bedzie ich bardzo duzo)
+			status = reper->usunBiletZFilmu(user, nazwaFilmu, daneSR, miejsceR);
 			if(status) return -2; //odrzucenie transakcji, powrot do stanu wczesniejszego
 			else return -1; //krytyczny blad po odrzuceniu transakcji, nie zwolnilo sie miejsce 
 		}
@@ -1403,7 +1392,6 @@ int Sklep::anulujBilet(long user, string nazwaFilmu, int indeks) { //nazwaFilmu 
 					if(status) {
 						return 0;
 					} else {
-						//TO-DO - zapisz blad zwolnienia miejsca w logach
 						return 3; //blad zwolnienia miejsca w seansie
 					}
 				} else {
@@ -1417,7 +1405,7 @@ int Sklep::anulujBilet(long user, string nazwaFilmu, int indeks) { //nazwaFilmu 
 
 bool Sklep::dodajDodatek(string str, double s1, double s2) {
 	this->archive();
-	if(s1 < 0 || s2 < 0 || (s1 == 0 && s2 == 0) || str.length() == 0) return false;	//TO-DO - rozdzielic kody bledow, wartosc zwracana typu int
+	if(s1 < 0 || s2 < 0 || (s1 == 0 && s2 == 0) || str.length() == 0) return false;
 	dodList.push_back({str,s1,s2});
 	return true;
 }
@@ -1425,7 +1413,6 @@ bool Sklep::dodajDodatek(string str, double s1, double s2) {
 bool Sklep::dodajZnizke(string str, double o1, double p, double o2, int min, int max) {
 	this->archive();
 	if(o1 < 0 || o2 < 0 || min<0 || max<0 || p < 0 || p > 100 || (o1 == 0 && o2 == 0 && p == 0) || str.length() == 0) return false;
-	//TO-DO - rozdzielic kody bledow, wartosc zwracana typu int
 	znizList.push_back({str, o1, p, o2, min, max});
 	return true;
 }
@@ -1634,7 +1621,6 @@ void Interfejs::fillUserBuffers() {
 	cin >> bufor3;
 	cout << "Podaj nazwisko: ";
 	cin >> bufor4;
-		// !!! opracuj weryfikacje poprawnosci buforow 3-4 !!!	<<< TO-DO
 	ibufor1 = 1;
 	while(true) {
 		cout << "Podaj rok urodzenia: ";
